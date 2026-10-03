@@ -204,6 +204,8 @@ def wiki_docs(path: str | os.PathLike[str], syms: Symbols, report: Report) -> di
                 member, kind, args = "this[]", "Property", str(indexer.group(1))
             elif generic:
                 member = member[: generic.start()]
+            if kind == "Method" and member == t["name"]:
+                member = ".ctor"
             if kind == "Method" or indexer:
                 parsed = wiki_args(args)
                 ptypes = [ptype for ptype, _, _ in parsed]

@@ -231,6 +231,17 @@ def test_wiki_formula_braces_do_not_end_templates(tmp_path: Path) -> None:
     assert r"<summary>As \frac{M_{\mathrm{p} } } {2}.</summary>" in xml
 
 
+def test_wiki_constructors(tmp_path: Path) -> None:
+    syms = [*SYMBOLS, symbol("M:Vessel.#ctor", "Method", ".ctor", "Vessel", ptypes=[], pnames=[])]
+    wiki = tmp_path / "wiki.xml"
+    _ = wiki.write_text(
+        WIKI.replace("{{Field|name=mass|desc=Description goes here.}}", "{{Method|name=Vessel|args=|desc=Makes one.}}")
+    )
+    _ = merge_docs(Symbols(syms), tmp_path / "out", wiki=wiki)
+    members = members_of(tmp_path / "out" / "Assembly-CSharp.xml")
+    assert members["M:Vessel.#ctor"].startswith("<summary>Makes one.</summary>")
+
+
 def test_wiki_generic_names(tmp_path: Path) -> None:
     syms = [*SYMBOLS, symbol("M:Vessel.Find``1", "Method", "Find", "Vessel", ptypes=[], pnames=[])]
     syms[-1]["tparams"] = 1
