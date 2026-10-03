@@ -159,6 +159,9 @@ def wiki_docs(path: str | os.PathLike[str], syms: Symbols, report: Report) -> di
             continue
         report.stats["wiki: API pages"] += 1
         text = page.findtext("m:revision/m:text", "", WIKI_NS)
+        # MediaWiki would read <T> as an HTML tag, so pages write type
+        # arguments as the references &#x3008; and &#x3009; (CJK angle brackets).
+        text = text.replace("&#x3008;", "<").replace("&#x3009;", ">")
         # LaTeX is indifferent to a space between braces, and without one a
         # formula's "}}" would close the template it sits in.
         text = MATH.sub(lambda m: m[1] + re.sub(r"([{}])(?=[{}])", r"\1 ", m[2]) + m[3], text)

@@ -231,6 +231,17 @@ def test_wiki_formula_braces_do_not_end_templates(tmp_path: Path) -> None:
     assert r"<summary>As \frac{M_{\mathrm{p} } } {2}.</summary>" in xml
 
 
+def test_wiki_generic_names(tmp_path: Path) -> None:
+    syms = [*SYMBOLS, symbol("M:Vessel.Find``1", "Method", "Find", "Vessel", ptypes=[], pnames=[])]
+    syms[-1]["tparams"] = 1
+    text = "{{Method|name=Find&amp;#x3008;T&amp;#x3009;|args=|desc=Finds one.}}"
+    wiki = tmp_path / "wiki.xml"
+    _ = wiki.write_text(WIKI.replace("{{Field|name=mass|desc=Description goes here.}}", text))
+    _ = merge_docs(Symbols(syms), tmp_path / "out", wiki=wiki)
+    members = members_of(tmp_path / "out" / "Assembly-CSharp.xml")
+    assert members["M:Vessel.Find``1"].startswith("<summary>Finds one.</summary>")
+
+
 def members_of(path: Path) -> dict[str, str]:
     """Each <member> of an XML documentation file, as its inner XML keyed by ID."""
     return {
