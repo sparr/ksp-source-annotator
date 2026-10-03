@@ -20,6 +20,7 @@ from ksp_source_annotator import (
     unlink_apidocs,
 )
 from ksp_source_annotator.cli import main
+from ksp_source_annotator.link import strip_extended_prefix, symlink_target
 
 # The package exports the function under the module's name, so fetch the module.
 decompile_module = importlib.import_module("ksp_source_annotator.decompile")
@@ -44,7 +45,7 @@ def test_link_creates_and_updates(install: KspInstall, workspace: Workspace) -> 
 
     # KSPAssets.dll is not in the install, so its file is skipped.
     assert sorted(p.name for p in linked) == ["Assembly-CSharp-firstpass.xml", "Assembly-CSharp.xml"]
-    assert stale.readlink() == docs / "Assembly-CSharp.xml"
+    assert symlink_target(stale) == docs / "Assembly-CSharp.xml"
     assert not (install.managed / "KSPAssets.xml").exists()
 
 
@@ -182,3 +183,9 @@ def test_cli_clean_with_a_named_install_that_is_missing(workspace: Workspace, tm
     assert main(["clean", *args, "--cache-dir", str(workspace.cache_dir)]) == 1
     # Nothing is removed when the named install cannot be cleaned.
     assert (workspace.root / "KSP-1.12.5.3190").is_dir()
+
+
+def test_strip_extended_prefix() -> None:
+    assert strip_extended_prefix("\\\\?\\C:\\KSP\\Assembly-CSharp.xml") == "C:\\KSP\\Assembly-CSharp.xml"
+    assert strip_extended_prefix("\\\\?\\UNC\\server\\share\\a.xml") == "\\\\server\\share\\a.xml"
+    assert strip_extended_prefix("/home/user/a.xml") == "/home/user/a.xml"

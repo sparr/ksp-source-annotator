@@ -13,6 +13,24 @@ from .workspace import Workspace
 log = logging.getLogger(__name__)
 
 
+def strip_extended_prefix(path: str) -> str:
+    r"""A Windows path without the \\?\ prefix that marks an extended-length
+    path, which Windows puts on the targets of symlinks; \\?\UNC\server\share
+    becomes \\server\share. Other paths are returned unchanged."""
+    if path.startswith("\\\\?\\UNC\\"):
+        return "\\\\" + path[8:]
+    if path.startswith("\\\\?\\"):
+        return path[4:]
+    return path
+
+
+def symlink_target(link: Path) -> Path:
+    """Where a symlink points, as a path comparable with others: relative
+    targets are taken from the link's directory, and on Windows the
+    extended-length prefix is removed."""
+    return link.parent / strip_extended_prefix(str(link.readlink()))
+
+
 def link_apidocs(install: KspInstall, workspace: Workspace) -> list[Path]:
     """Symlink each built <Assembly>.xml beside <Assembly>.dll in the install.
 
@@ -67,7 +85,7 @@ def unlink_apidocs(install: KspInstall, workspace: Workspace) -> list[Path]:
     for link in sorted(install.managed.glob("*.xml")):
         if not link.is_symlink():
             continue
-        target = link.parent / link.readlink()
+        target = symlink_target(link)
         if not any(target.is_relative_to(d) for d in version_dirs):
             continue
         try:
