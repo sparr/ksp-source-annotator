@@ -1,0 +1,76 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ksp-source-annotator"
+version = "0.1.0"
+description = "Decompile a Kerbal Space Program install into documented C# source and XML API documentation"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Clarence \"Sparr\" Risher", email = "sparr0@gmail.com" }]
+requires-python = ">=3.12"
+dependencies = []
+keywords = ["kerbal space program", "ksp", "modding", "decompiler", "documentation"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Topic :: Games/Entertainment :: Simulation",
+    "Topic :: Software Development :: Documentation",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/sparr/ksp-source-annotator"
+Source = "https://github.com/sparr/ksp-source-annotator"
+Issues = "https://github.com/sparr/ksp-source-annotator/issues"
+Changelog = "https://github.com/sparr/ksp-source-annotator/releases"
+
+[project.scripts]
+ksp-source-annotator = "ksp_source_annotator.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff", "basedpyright", "vendoring"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ksp_source_annotator"]
+
+[tool.hatch.build.targets.sdist]
+include = ["/src", "/tests", "/README.md", "/LICENSE"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["dotnet: needs dotnet, and builds the Roslyn helper (deselect with -m 'not dotnet')"]
+
+[tool.ruff]
+line-length = 120
+src = ["src", "tests"]
+extend-exclude = ["src/ksp_source_annotator/_vendor"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "PTH", "RUF"]
+
+[tool.basedpyright]
+include = ["src", "tests"]
+exclude = ["src/ksp_source_annotator/_vendor"]
+pythonVersion = "3.12"
+reportImplicitStringConcatenation = false
+
+[tool.vendoring]
+destination = "src/ksp_source_annotator/_vendor/"
+requirements = "src/ksp_source_annotator/_vendor/vendor.txt"
+namespace = "ksp_source_annotator._vendor"
+protected-files = ["__init__.py", "README.md", "vendor.txt"]
+
+[tool.vendoring.transformations]
+# Console scripts and install metadata; the licenses are copied beside each package.
+drop = ["bin/", "*.dist-info/"]
+
+[tool.vendoring.typing-stubs]
+# The vendored packages are excluded from type checking, so no stubs are needed.
+game_install_finder = []
+vdf = []

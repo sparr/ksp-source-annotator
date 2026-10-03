@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Foo</name>
+  </assembly>
+  <members>
+    <member name="T:Foo"><summary>A type with a long summary that should certainly need to be wrapped across more than one line because it goes on and on, mentioning <see cref="T:Del"/> and <c>code</c> along the way so that the tag-preserving wrap is exercised too.</summary><remarks>Source: test.</remarks></member>
+    <member name="F:Foo.b"><summary>Doc for b only, in a two-variable field declaration.</summary></member>
+    <member name="F:Foo.c"><summary>Field with an attribute on its own line.</summary></member>
+    <member name="M:Foo.#ctor(System.Int32)"><summary>Constructor.</summary><param name="x">The x.</param></member>
+    <member name="P:Foo.Item(System.Int32)"><summary>Indexer.</summary></member>
+    <member name="T:Foo.Kind"><summary>Nested enum.</summary></member>
+    <member name="F:Foo.Kind.Two"><summary>Second value.</summary></member>
+    <member name="M:Foo.Bar``1(``0@,System.Int32@)"><summary>Generic with ref and out.</summary><typeparam name="T">The T.</typeparam><param name="t">The t.</param><param name="n">The n.</param></member>
+    <member name="P:Foo.P"><summary>Property.</summary></member>
+    <member name="E:Foo.E"><summary>Event.</summary></member>
+    <member name="M:Foo.Nested.Inner"><summary>Nested class method with a code sample.</summary><remarks>Example: <code>var f = new Foo(1);
+f.Bar(ref f, out var n);
+   if (n &lt; 2) { }</code> and &amp; entities</remarks></member>
+    <member name="T:Del"><summary>Delegate.</summary><param name="x">The x.</param></member>
+    <member name="M:Foo.Missing"><summary>Not in source.</summary></member>
+  </members>
+</doc>

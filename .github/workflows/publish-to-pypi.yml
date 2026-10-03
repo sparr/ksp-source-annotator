@@ -1,0 +1,72 @@
+# Publishes to PyPI when a GitHub release is published, using trusted
+# publishing: PyPI accepts the upload because it comes from this workflow in
+# this repository, so no API token is stored here.
+#
+# One-time setup on PyPI (Your account > Publishing > Add a new pending
+# publisher): project ksp-source-annotator, owner sparr, repository
+# ksp-source-annotator, workflow publish-to-pypi.yml, environment pypi.
+
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build distributions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Check that the release tag matches the package version
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          version=$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')
+          if [ "$TAG" != "v$version" ]; then
+            echo "::error::release tag $TAG does not match v$version from pyproject.toml"
+            exit 1
+          fi
+
+      - name: Test
+        run: |
+          python -m pip install pytest
+          PYTHONPATH=src python -m pytest -m "not dotnet"
+
+      - name: Build
+        run: |
+          python -m pip install build
+          python -m build
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  publish:
+    name: Upload to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/ksp-source-annotator/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1

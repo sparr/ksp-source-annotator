@@ -1,0 +1,2 @@
+game-install-finder==0.4.0
+vdf==3.4

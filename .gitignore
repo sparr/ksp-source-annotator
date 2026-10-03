@@ -1,0 +1,14 @@
+# KSP Wiki exports
+Kerbal+Space+Program+Wiki-*.xml
+
+# Output files
+KSP-*/
+
+# Python detritus
+__pycache__/
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
