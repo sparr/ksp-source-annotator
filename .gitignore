@@ -12,3 +12,7 @@ __pycache__/
 .ruff_cache/
 build/
 dist/
+
+# .NET build output
+bin/
+obj/
