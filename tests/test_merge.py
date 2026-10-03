@@ -290,6 +290,17 @@ def test_anatid_text_is_escaped(tmp_path: Path) -> None:
     assert '<member name="F:Vessel.id">Mass &amp; size &lt; 3<summary>x</summary>' in xml
 
 
+def test_anatid_drops_params_the_symbol_lacks(tmp_path: Path) -> None:
+    anatid = tmp_path / "anatid.xml"
+    _ = anatid.write_text(
+        '<doc><members><member name="M:Vessel.GetName(System.Boolean)"><summary>x</summary>'
+        '<param name="full">Gone since 2015.</param></member></members></doc>'
+    )
+    _ = merge_docs(Symbols(SYMBOLS), tmp_path / "out", anatid=anatid)
+    members = members_of(tmp_path / "out" / "Assembly-CSharp.xml")
+    assert members["M:Vessel.GetName"].startswith("<summary>x</summary><remarks>")
+
+
 def test_doxygen_operators(tmp_path: Path) -> None:
     syms = [
         symbol("T:Vec", "NamedType", "Vec"),

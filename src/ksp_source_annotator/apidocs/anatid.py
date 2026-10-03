@@ -28,8 +28,11 @@ def anatid_docs(path: str | os.PathLike[str], syms: Symbols, report: Report) -> 
         if sym["id"] != old:
             report.stats["anatid: entries remapped to a moved or changed symbol"] += 1
         d = Doc("anatid")
+        # A method whose signature changed since 2015 can have lost parameters.
+        pnames = sym["pnames"]
+        children = [c for c in m if pnames is None or c.tag != "param" or c.get("name") in pnames]
         # ElementTree has decoded the entities in m.text; tostring re-escapes the children.
-        raw = escape(m.text or "") + "".join(ET.tostring(c, encoding="unicode") for c in m)
+        raw = escape(m.text or "") + "".join(ET.tostring(c, encoding="unicode") for c in children)
         raw = re.sub(r"\s*\n\s*", " ", raw).strip()
         d.raw = raw + "<remarks>Source: anatid community API documentation (2015).</remarks>"
         if sym["id"] in out:
