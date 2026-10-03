@@ -152,6 +152,11 @@ class Symbols:
         for Report.unmatched. Each filter is applied only while several candidates
         remain: kind, parameter count, generic parameter count, parameter
         types, then ref/out modifiers."""
+        # A sole candidate is accepted even when it fails a filter. The sources
+        # predate the assemblies, and such a candidate is nearly always the
+        # same symbol: a delegate that Doxygen calls a function, a field that
+        # became a property, a method that gained parameters, or a parameter
+        # type spelled differently. Callers drop <param> tags the symbol lacks.
         cand = self.candidates(type_full, name)
         named = len(cand)
         if named == 0:
