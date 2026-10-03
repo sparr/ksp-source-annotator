@@ -159,6 +159,20 @@ def test_merge_skips_absent_sources(tmp_path: Path) -> None:
     assert not any(k.startswith(("official", "wiki", "game")) for k in report.stats)
 
 
+def test_merge_removes_stale_assembly_xml(tmp_path: Path) -> None:
+    out = tmp_path / "out"
+    out.mkdir()
+    stale = out / "Old-Assembly.xml"
+    _ = stale.write_text("<doc><assembly><name>Old-Assembly</name></assembly><members/></doc>")
+    other = out / "notes.xml"
+    _ = other.write_text("<notes/>")
+    report = merge_docs(Symbols(SYMBOLS), out, anatid=write_sources(tmp_path)["anatid"])
+    assert not stale.exists()
+    assert other.exists()
+    assert (out / "Assembly-CSharp.xml").exists()
+    assert report.stats["output: stale XML files removed"] == 1
+
+
 def test_merge_reports_are_independent(tmp_path: Path) -> None:
     sources = write_sources(tmp_path)
     first = merge_docs(Symbols(SYMBOLS), tmp_path / "a", **sources)

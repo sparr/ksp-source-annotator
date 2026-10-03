@@ -41,7 +41,9 @@ def merge_docs(
     gamedata: str | os.PathLike[str] | None = None,
 ) -> Report:
     """Build each given source, merge them in priority order, and write the
-    XML files, REPORT.txt, and UNMATCHED.txt into out.
+    XML files, REPORT.txt, and UNMATCHED.txt into out. Documentation XML
+    files already in out for assemblies this run documents nothing in are
+    removed.
 
     symbols is a Symbols or the path of a symbols.json from symdump.
     official is the Doxygen xml.zip, anatid is anatid's Assembly-CSharp.xml,
@@ -97,9 +99,23 @@ def merge_docs(
         _ = ET.fromstring(document)
         _ = (out_dir / f"{asm}.xml").write_text(document, encoding="utf-8")
         report.stats[f"output: {asm}.xml entries"] = len(ids)
+    for stale in sorted(out_dir.glob("*.xml")):
+        if stale.stem not in by_asm and _is_assembly_doc(stale):
+            stale.unlink()
+            report.stats["output: stale XML files removed"] += 1
 
     _ = (out_dir / "UNMATCHED.txt").write_text(
         "".join("\t".join(row) + "\n" for row in sorted(report.unmatched)), encoding="utf-8"
     )
     _ = (out_dir / "REPORT.txt").write_text(report.format() + "\n", encoding="utf-8")
     return report
+
+
+def _is_assembly_doc(path: Path) -> bool:
+    """Whether path is a .NET XML documentation file for the assembly its
+    name gives, the shape merge_docs writes."""
+    try:
+        root = ET.parse(path).getroot()
+    except ET.ParseError:
+        return False
+    return root.tag == "doc" and root.findtext("assembly/name") == path.stem
